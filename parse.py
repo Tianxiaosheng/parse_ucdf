@@ -5,7 +5,8 @@ from tkinter import *
 import argparse
 import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-#from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
+from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
+
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import numpy as np
@@ -157,7 +158,7 @@ class Planner_Data(object):
 class Stg(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
-        self.title("St_graph")
+        self.title("parse_ucdf")
         self.planner_data = Planner_Data()
         self.parser_options()
         self.planner_data.parse_canstate_full(self.planner_opts.log_file, True ,2)
@@ -171,29 +172,61 @@ class Stg(tk.Tk):
         footframe['relief'] = 'raised'
         footframe.grid(column=0, row=0, sticky=(N, W, E, S))
 
-        fig = Figure(figsize=(5, 4), dpi=100)
+        fig = Figure(figsize=(8, 4), dpi=100)
         self.ax = fig.add_subplot(111)
         self.canvas = FigureCanvasTkAgg(fig, footframe)
-        self.canvas.get_tk_widget().grid(column=0,row=0,sticky=(E, W))
+
+        toolbar = NavigationToolbar2Tk(self.canvas, footframe)
+        toolbar.update()
+        self.canvas.get_tk_widget().pack(side="top")
+
+        footframe2 = tk.Frame(self)
+        footframe2.grid(row=0,column=1, sticky=(N, W, E, S))
 
         if len(self.planner_data.cmd) != len(self.planner_data.can_state_full):
             print("Error, Some data lost")
-        size = min(len(self.planner_data.cmd), len(self.planner_data.can_state_full))
-        frame = np.arange(0, size)
+        self.size = min(len(self.planner_data.cmd),
+                len(self.planner_data.can_state_full))
+        self.frame = np.arange(0, self.size)
 
-        self.ax.plot(frame, self.planner_data.cmd[0:size, 0], 'r')
-        self.ax.plot(frame, self.planner_data.can_state_full[0:size, 0], 'g')
+        self.ax.plot(self.frame, self.planner_data.cmd[0:self.size, 2], 'r',
+                label="expt_acc")
+        self.ax.plot(self.frame, self.planner_data.can_state_full[0:self.size, 2], 'g',
+                label="veh_acc")
+        self.ax.legend(loc="best")
+        self.ax.grid(True)
         self.canvas.draw()
 
-        button1 = tk.Button(footframe, text='重画', command=self.printf_info)
-        button1.grid(column=1, row=1, sticky=(E, W))
-        button2 = tk.Button(footframe, text='退出', command=self._quit)
-        button2.grid(column=2, row=2, sticky=(E, W))
+        # set check_value
+        self.checkVar_veh_acc = IntVar()
+        self.checkVar_expt_acc = IntVar()
+        self.checkVar_veh_vel = IntVar()
+        self.checkVar_expt_vel = IntVar()
 
-        self.checkVar = IntVar()
-        checkbutton = tk.Checkbutton(footframe, text='checkbutton', variable = self.checkVar, onvalue = 1, offvalue = 0, command=self.printf_info)
-        checkbutton.grid(column=3, row=3, sticky=(E, W))
+        checkbutton_veh_acc = tk.Checkbutton(footframe2, text='veh_acc',
+                variable = self.checkVar_veh_acc, onvalue = 1, offvalue = 0,
+                command=self.printf_info)
+        checkbutton_veh_acc.grid(row=0, column=0, sticky=(W))
 
+        checkbutton_expt_acc = tk.Checkbutton(footframe2, text='expt_acc',
+                variable = self.checkVar_expt_acc, onvalue = 1, offvalue = 0,
+                command=self.printf_info)
+        checkbutton_expt_acc.grid(row=1, column=0, sticky=(W))
+
+        checkbutton_veh_vel = tk.Checkbutton(footframe2, text='veh_vel',
+                variable = self.checkVar_veh_vel, onvalue = 1, offvalue = 0,
+                command=self.printf_info)
+        checkbutton_veh_vel.grid(row=2, column=0, sticky=(W))
+
+        checkbutton_expt_vel = tk.Checkbutton(footframe2, text='expt_vel',
+                variable = self.checkVar_expt_vel, onvalue = 1, offvalue = 0,
+                command=self.printf_info)
+        checkbutton_expt_vel.grid(row=3, column=0, sticky=(W))
+
+        self.checkVar_veh_acc.set(1)
+        self.checkVar_expt_acc.set(1)
+        self.checkVar_veh_vel.set(0)
+        self.checkVar_expt_vel.set(0)
 
     def parser_options(self):
         parser = argparse.ArgumentParser()
@@ -203,7 +236,32 @@ class Stg(tk.Tk):
         self.planner_opts = parser.parse_args()
 
     def printf_info(self):
-        print(self.checkVar.get())
+
+        #clear prev plot result
+        self.ax.clear()
+
+        if self.checkVar_veh_acc.get() == 1:
+           self.ax.plot(self.frame, self.planner_data.can_state_full[0:self.size, 2],
+                   'g', label="veh_acc")
+        if self.checkVar_expt_acc.get() == 1:
+           self.ax.plot(self.frame, self.planner_data.cmd[0:self.size, 2], 'r',
+                   label="expt_acc")
+
+        if self.checkVar_veh_vel.get() == 1:
+           self.ax.plot(self.frame, self.planner_data.can_state_full[0:self.size, 0],
+                   'g', label="veh_vel")
+        if self.checkVar_expt_vel.get() == 1:
+           self.ax.plot(self.frame, self.planner_data.cmd[0:self.size, 0], 'r',
+                   label="expt_vel")
+
+        self.ax.legend(loc="best")
+        self.ax.grid(True)
+        self.canvas.draw()
+
+
+
+
+
     def _quit(self):
         ''' 退出 '''
         self.quit()
