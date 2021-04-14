@@ -18,6 +18,7 @@ class Planner_Data(object):
         self.state = []
         self.state_full = []
         self.cmd = []
+        self.cmd_planner = []
         return
 
     def parse_logfile(self, log_file):
@@ -153,6 +154,31 @@ class Planner_Data(object):
                     line = log.readline()
         self.cmd = np.array(self.cmd)
 
+    def parse_cancmd_planner(self, log_file):
+        pattern = re.compile(r'^can_cmd_planner +')
+        with open(log_file, 'r') as log:
+                self.cmd_planner = []
+                line = log.readline()
+                while line:
+                    match = pattern.match(line)
+                    if match:
+                        line_split = line.split(' : ')
+                        line_split = line_split[1].split(',')
+                        data_split = line_split[0].split('vel: ')
+                        data_split = data_split[1].split(')')
+                        vel = float(data_split[0])
+                        data_split = line_split[1].split('acc: ')
+                        data_split = data_split[1].split(')')
+                        acc = float(data_split[0])
+                        data_split = line_split[2].split('steer: ')
+                        data_split = data_split[1].split(')')
+                        steer = float(data_split[0])
+                        data_split = line_split[5].split('brake: ')
+                        data_split = data_split[1].split(')')
+                        brake = float(data_split[0])
+                        self.cmd_planner.append([vel, steer, acc, brake])
+                    line = log.readline()
+        self.cmd_planner = np.array(self.cmd_planner)
 
 
 class Stg(tk.Tk):
@@ -163,6 +189,7 @@ class Stg(tk.Tk):
         self.parser_options()
         self.planner_data.parse_canstate_full(self.planner_opts.log_file, True ,2)
         self.planner_data.parse_cancmd(self.planner_opts.log_file)
+        self.planner_data.parse_cancmd_planner(self.planner_opts.log_file)
         self.createWdidgets()
 
     def createWdidgets(self):
@@ -189,49 +216,60 @@ class Stg(tk.Tk):
                 len(self.planner_data.can_state_full))
         self.frame = np.arange(0, self.size)
 
-        self.ax.plot(self.frame, self.planner_data.cmd[0:self.size, 2], 'r',
-                label="expt_acc")
-        self.ax.plot(self.frame, self.planner_data.can_state_full[0:self.size, 2], 'g',
-                label="veh_acc")
-        self.ax.legend(loc="best")
-        self.ax.grid(True)
-        self.canvas.draw()
 
         # set check_value
         self.checkVar_veh_acc = IntVar()
         self.checkVar_expt_acc = IntVar()
         self.checkVar_veh_vel = IntVar()
         self.checkVar_expt_vel = IntVar()
+        self.checkVar_expt_acc_planner = IntVar()
+        self.checkVar_expt_vel_planner = IntVar()
 
-        checkbutton_veh_acc = tk.Checkbutton(footframe2, text='veh_acc',
-                variable = self.checkVar_veh_acc, onvalue = 1, offvalue = 0,
+        checkbutton_expt_acc_planner = tk.Checkbutton(footframe2, text='Expt_Acc_Planner',
+                variable = self.checkVar_expt_acc_planner, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
-        checkbutton_veh_acc.grid(row=0, column=0, sticky=(W))
+        checkbutton_expt_acc_planner.grid(row=0, column=0, sticky=(W))
 
-        checkbutton_expt_acc = tk.Checkbutton(footframe2, text='expt_acc',
+
+        checkbutton_expt_acc = tk.Checkbutton(footframe2, text='Expt_Acc',
                 variable = self.checkVar_expt_acc, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
         checkbutton_expt_acc.grid(row=1, column=0, sticky=(W))
 
-        checkbutton_veh_vel = tk.Checkbutton(footframe2, text='veh_vel',
-                variable = self.checkVar_veh_vel, onvalue = 1, offvalue = 0,
+        checkbutton_expt_vel_planner = tk.Checkbutton(footframe2, text='Expt_Vel_Planner',
+                variable = self.checkVar_expt_vel_planner, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
-        checkbutton_veh_vel.grid(row=2, column=0, sticky=(W))
+        checkbutton_expt_vel_planner.grid(row=2, column=0, sticky=(W))
 
-        checkbutton_expt_vel = tk.Checkbutton(footframe2, text='expt_vel',
+        checkbutton_expt_vel = tk.Checkbutton(footframe2, text='Expt_Vel',
                 variable = self.checkVar_expt_vel, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
         checkbutton_expt_vel.grid(row=3, column=0, sticky=(W))
 
-        self.checkVar_veh_acc.set(1)
-        self.checkVar_expt_acc.set(1)
-        self.checkVar_veh_vel.set(0)
+        checkbutton_veh_acc = tk.Checkbutton(footframe2, text='Veh_Acc',
+                variable = self.checkVar_veh_acc, onvalue = 1, offvalue = 0,
+                command=self.printf_info)
+        checkbutton_veh_acc.grid(row=4, column=0, sticky=(W))
+
+
+        checkbutton_veh_vel = tk.Checkbutton(footframe2, text='Veh_Vel',
+                variable = self.checkVar_veh_vel, onvalue = 1, offvalue = 0,
+                command=self.printf_info)
+        checkbutton_veh_vel.grid(row=5, column=0, sticky=(W))
+
+        self.checkVar_expt_acc_planner.set(1)
+        self.checkVar_expt_acc.set(0)
+        self.checkVar_expt_vel_planner.set(0)
         self.checkVar_expt_vel.set(0)
+        self.checkVar_veh_acc.set(1)
+        self.checkVar_veh_vel.set(0)
+
+        self.printf_info();
 
     def parser_options(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('--log', action='store', dest='log_file' \
-                            , default="None", help='planner log file')
+                            , default="None", help='plot planner profile gui v1.0')
 
         self.planner_opts = parser.parse_args()
 
@@ -240,27 +278,30 @@ class Stg(tk.Tk):
         #clear prev plot result
         self.ax.clear()
 
+        if self.checkVar_expt_acc_planner.get() == 1:
+           self.ax.plot(self.frame, self.planner_data.cmd_planner[0:self.size, 2], 'r',
+                   label="expt_acc_planner")
+        if self.checkVar_expt_acc.get() == 1:
+            self.ax.plot(self.frame, self.planner_data.cmd[0:self.size, 2], 'r:',
+                   label="expt_acc")
+
+        if self.checkVar_expt_vel_planner.get() == 1:
+            self.ax.plot(self.frame, self.planner_data.cmd_planner[0:self.size, 0], 'r--',
+                   label="expt_vel_planner")
+        if self.checkVar_expt_vel.get() == 1:
+           self.ax.plot(self.frame, self.planner_data.cmd[0:self.size, 0], 'r-.',
+                   label="expt_vel")
+
         if self.checkVar_veh_acc.get() == 1:
            self.ax.plot(self.frame, self.planner_data.can_state_full[0:self.size, 2],
                    'g', label="veh_acc")
-        if self.checkVar_expt_acc.get() == 1:
-           self.ax.plot(self.frame, self.planner_data.cmd[0:self.size, 2], 'r',
-                   label="expt_acc")
-
         if self.checkVar_veh_vel.get() == 1:
            self.ax.plot(self.frame, self.planner_data.can_state_full[0:self.size, 0],
-                   'g', label="veh_vel")
-        if self.checkVar_expt_vel.get() == 1:
-           self.ax.plot(self.frame, self.planner_data.cmd[0:self.size, 0], 'r',
-                   label="expt_vel")
+                   'g--', label="veh_vel")
 
         self.ax.legend(loc="best")
         self.ax.grid(True)
         self.canvas.draw()
-
-
-
-
 
     def _quit(self):
         ''' 退出 '''
