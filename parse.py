@@ -98,8 +98,13 @@ class Planner_Data(object):
                         data_split = line_split[5].split('brake_enabled: ')
                         data_split = data_split[1].split(')')
                         brake = float(data_split[0])
+
+                        data_split = line_split[2].split('shift: ')
+                        data_split = data_split[1].split(')')
+                        shift = float(data_split[0])
+
                         acc = 0.0
-                        self.can_state_full.append([vel, steer, acc, brake])
+                        self.can_state_full.append([vel, steer, acc, brake, shift])
                     line = log.readline()
         self.can_state_full = np.array(self.can_state_full)
         WINDOW = 5
@@ -224,6 +229,7 @@ class Stg(tk.Tk):
         self.checkVar_expt_vel = IntVar()
         self.checkVar_expt_acc_planner = IntVar()
         self.checkVar_expt_vel_planner = IntVar()
+        self.checkVar_veh_shift = IntVar()
 
         checkbutton_expt_acc_planner = tk.Checkbutton(footframe2, text='Expt_Acc_Planner',
                 variable = self.checkVar_expt_acc_planner, onvalue = 1, offvalue = 0,
@@ -257,12 +263,19 @@ class Stg(tk.Tk):
                 command=self.printf_info)
         checkbutton_veh_vel.grid(row=5, column=0, sticky=(W))
 
+        checkbutton_veh_shift = tk.Checkbutton(footframe2, text='Veh_Shift',
+                variable = self.checkVar_veh_shift, onvalue = 1, offvalue = 0,
+                command=self.printf_info)
+        checkbutton_veh_shift.grid(row=6, column=0, sticky=(W))
+
+
         self.checkVar_expt_acc_planner.set(1)
         self.checkVar_expt_acc.set(0)
         self.checkVar_expt_vel_planner.set(0)
         self.checkVar_expt_vel.set(0)
         self.checkVar_veh_acc.set(1)
         self.checkVar_veh_vel.set(0)
+        self.checkVar_veh_shift.set(0)
 
         self.printf_info();
 
@@ -299,10 +312,17 @@ class Stg(tk.Tk):
            self.ax.plot(self.frame, self.planner_data.can_state_full[0:self.size, 0],
                    'g--', label="veh_vel")
 
+        if self.checkVar_veh_shift.get() == 1:
+           self.ax.plot(self.frame, self.planner_data.can_state_full[0:self.size, 4],
+                   'b', label="veh_shift")
+
+
         self.ax.legend(loc="best")
         self.ax.grid(True)
+        self.ax.set_xlabel("frame(100ms)")
+        self.ax.set_ylabel("vel(m/s) acc(m/s^2)")
+        self.ax.set_title("ucdf_plot")
         self.canvas.draw()
-
     def _quit(self):
         ''' 退出 '''
         self.quit()
