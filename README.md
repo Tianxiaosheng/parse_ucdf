@@ -1,5 +1,8 @@
-# How to run the parse script of txt from ucdf
+# How to run the parse script
 
-```python
-python parse.py --log ~/uos/install/1.txt
+
+```shell
+cd ~/uos/install
+bin/uos_replay-dump xx.txt  data/xxxxx.ucdf
+python par_gui.py --log xx.txt
 ```
