@@ -254,8 +254,19 @@ class Stg(tk.Tk):
 
         footframe2 = tk.Frame(self)
         footframe2.grid(row=0,column=1, sticky=(N, W, E, S))
-
         footframe2.columnconfigure(1, weight=1)
+
+        labelAcc = tk.LabelFrame(footframe2, text='Acc')
+        labelVel = tk.LabelFrame(footframe2, text='Vel')
+        labelShift = tk.LabelFrame(footframe2, text='Shift')
+        labelSteer = tk.LabelFrame(footframe2, text='Steer')
+        labelState = tk.LabelFrame(footframe2, text='State')
+
+        labelAcc.grid(column=0, row=0, padx=8, pady=4, sticky='EW')
+        labelVel.grid(column=0, row=1, padx=8, pady=4, sticky='EW')
+        labelShift.grid(column=0, row=2, padx=8, pady=4, sticky='EW')
+        labelSteer.grid(column=0, row=3, padx=8, pady=4, sticky='EW')
+        labelState.grid(column=0, row=4, padx=8, pady=4, sticky='EW')
 
         if len(self.planner_data.cmd) != len(self.planner_data.can_state_full):
             print("Error, Some data lost")
@@ -288,87 +299,87 @@ class Stg(tk.Tk):
         self.checkVar_veh_control_source = IntVar()
 
         # 2. place checkbutton
-        checkbutton_expt_acc_planner = tk.Checkbutton(footframe2,  # acc
+        checkbutton_expt_acc_planner = tk.Checkbutton(labelAcc,  # acc
                 text='Expt_Acc_Planner',
                 variable = self.checkVar_expt_acc_planner,
                 onvalue = 1, offvalue = 0,
                 command=self.printf_info)
         checkbutton_expt_acc_planner.grid(row=0, column=0, sticky=(W))
 
-        checkbutton_expt_acc = tk.Checkbutton(footframe2, text='Expt_Acc',
+        checkbutton_expt_acc = tk.Checkbutton(labelAcc, text='Expt_Acc',
                 variable = self.checkVar_expt_acc, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
         checkbutton_expt_acc.grid(row=1, column=0, sticky=(W))
 
-        checkbutton_veh_acc = tk.Checkbutton(footframe2, text='Veh_Acc',
+        checkbutton_veh_acc = tk.Checkbutton(labelAcc, text='Veh_Acc',
                 variable = self.checkVar_veh_acc, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
         checkbutton_veh_acc.grid(row=2, column=0, sticky=(W))
 
-        checkbutton_expt_brake = tk.Checkbutton(footframe2, text='Expt_Brake',  # brake
+        checkbutton_expt_brake = tk.Checkbutton(labelAcc, text='Expt_Brake',  # brake
                 variable = self.checkVar_expt_brake, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
         checkbutton_expt_brake.grid(row=3, column=0, sticky=(W))
 
-        checkbutton_expt_vel_planner = tk.Checkbutton(footframe2, text='Expt_Vel_Planner',  # vel
+        checkbutton_expt_vel_planner = tk.Checkbutton(labelVel, text='Expt_Vel_Planner',  # vel
                 variable = self.checkVar_expt_vel_planner, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
-        checkbutton_expt_vel_planner.grid(row=4, column=0, sticky=(W))
+        checkbutton_expt_vel_planner.grid(row=0, column=0, sticky=(W))
 
-        checkbutton_expt_vel = tk.Checkbutton(footframe2, text='Expt_Vel',
+        checkbutton_expt_vel = tk.Checkbutton(labelVel, text='Expt_Vel',
                 variable = self.checkVar_expt_vel, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
-        checkbutton_expt_vel.grid(row=5, column=0, sticky=(W))
+        checkbutton_expt_vel.grid(row=1, column=0, sticky=(W))
 
-        checkbutton_veh_vel = tk.Checkbutton(footframe2, text='Veh_Vel',
+        checkbutton_veh_vel = tk.Checkbutton(labelVel, text='Veh_Vel',
                 variable = self.checkVar_veh_vel, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
-        checkbutton_veh_vel.grid(row=6, column=0, sticky=(W))
+        checkbutton_veh_vel.grid(row=2, column=0, sticky=(W))
 
-        checkbutton_expt_shift_planner = tk.Checkbutton(footframe2, text='Expt_Shift_Planner',  # shift
+        checkbutton_expt_shift_planner = tk.Checkbutton(labelShift, text='Expt_Shift_Planner',  # shift
                 variable = self.checkVar_expt_shift_planner, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
-        checkbutton_expt_shift_planner.grid(row=7, column=0, sticky=(W))
+        checkbutton_expt_shift_planner.grid(row=0, column=0, sticky=(W))
 
-        checkbutton_expt_shift = tk.Checkbutton(footframe2, text='Expt_Shift',
+        checkbutton_expt_shift = tk.Checkbutton(labelShift, text='Expt_Shift',
                 variable = self.checkVar_expt_shift, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
-        checkbutton_expt_shift.grid(row=8, column=0, sticky=(W))
+        checkbutton_expt_shift.grid(row=1, column=0, sticky=(W))
 
-        checkbutton_veh_shift = tk.Checkbutton(footframe2, text='Veh_Shift',
+        checkbutton_veh_shift = tk.Checkbutton(labelShift, text='Veh_Shift',
                 variable = self.checkVar_veh_shift, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
-        checkbutton_veh_shift.grid(row=9, column=0, sticky=(W))
+        checkbutton_veh_shift.grid(row=2, column=0, sticky=(W))
 
-        checkbutton_expt_steer_ang = tk.Checkbutton(footframe2, text='Expt_Steer_Ang',  #steer_ang
+        checkbutton_expt_steer_ang = tk.Checkbutton(labelSteer, text='Expt_Steer_Ang',  #steer_ang
                 variable = self.checkVar_expt_steer_ang, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
-        checkbutton_expt_steer_ang.grid(row=10, column=0, sticky=(W))
+        checkbutton_expt_steer_ang.grid(row=0, column=0, sticky=(W))
 
-        checkbutton_veh_steer_ang = tk.Checkbutton(footframe2, text='Veh_Steer_Ang',
+        checkbutton_veh_steer_ang = tk.Checkbutton(labelSteer, text='Veh_Steer_Ang',
                 variable = self.checkVar_veh_steer_ang, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
-        checkbutton_veh_steer_ang.grid(row=11, column=0, sticky=(W))
+        checkbutton_veh_steer_ang.grid(row=1, column=0, sticky=(W))
 
-        checkbutton_expt_steer_ang_vel = tk.Checkbutton(footframe2, text='Expt_Steer_Ang_Vel',
+        checkbutton_expt_steer_ang_vel = tk.Checkbutton(labelSteer, text='Expt_Steer_Ang_Vel',
                 variable = self.checkVar_expt_steer_ang_vel, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
-        checkbutton_expt_steer_ang_vel.grid(row=12, column=0, sticky=(W))
+        checkbutton_expt_steer_ang_vel.grid(row=2, column=0, sticky=(W))
 
-        checkbutton_veh_steer_ang_vel = tk.Checkbutton(footframe2, text='Veh_Steer_Ang_Vel',
+        checkbutton_veh_steer_ang_vel = tk.Checkbutton(labelSteer, text='Veh_Steer_Ang_Vel',
                 variable = self.checkVar_veh_steer_ang_vel, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
-        checkbutton_veh_steer_ang_vel.grid(row=13, column=0, sticky=(W))
+        checkbutton_veh_steer_ang_vel.grid(row=3, column=0, sticky=(W))
 
-        checkbutton_expt_estop = tk.Checkbutton(footframe2, text='Expt_Estop',  # status
+        checkbutton_expt_estop = tk.Checkbutton(labelState, text='Expt_Estop',  # status
                 variable = self.checkVar_expt_estop, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
-        checkbutton_expt_estop.grid(row=14, column=0, sticky=(W))
+        checkbutton_expt_estop.grid(row=0, column=0, sticky=(W))
 
-        checkbutton_veh_control_source = tk.Checkbutton(footframe2, text='Veh_Control_Source',
+        checkbutton_veh_control_source = tk.Checkbutton(labelState, text='Veh_Control_Source',
                 variable = self.checkVar_veh_control_source, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
-        checkbutton_veh_control_source.grid(row=15, column=0, sticky=(W))
+        checkbutton_veh_control_source.grid(row=1, column=0, sticky=(W))
 
         # 3. set checkVar's init value
         self.checkVar_expt_acc_planner.set(1)
