@@ -264,6 +264,7 @@ class Stg(tk.Tk):
 
         fig = Figure(figsize=(8, 4), dpi=100)
         self.ax = fig.add_subplot(111)
+        self.twinx = self.ax.twinx()
         self.canvas = FigureCanvasTkAgg(fig, footframe)
         self.canvas.get_tk_widget().pack(fill="both", expand=1)
 
@@ -456,6 +457,7 @@ class Stg(tk.Tk):
 
         #clear prev plot result
         self.ax.clear()
+        self.twinx.clear()
 
         # 4. plot data
         if self.checkVar_expt_acc_planner.get() == 1:  # acc
@@ -471,19 +473,19 @@ class Stg(tk.Tk):
                    'g', label="veh_acc")
 
         if self.checkVar_expt_throttle.get() == 1:  # expt throttle
-           self.ax.plot(self.frame, self.planner_data.cmd[0:self.size, 3],
-                   'tab:red', label="expt_throttle")
+           self.twinx.plot(self.frame, self.planner_data.cmd[0:self.size, 3],
+                   'darkviolet', label="expt_throttle")
 
         if self.checkVar_expt_brake.get() == 1:  # expt brake
-           self.ax.plot(self.frame, self.planner_data.cmd[0:self.size, 3],
+           self.twinx.plot(self.frame, self.planner_data.cmd[0:self.size, 3],
                    'k', label="expt_brake")
 
         if self.checkVar_veh_torque.get() == 1:  # brake pressure
-           self.ax.plot(self.frame, self.planner_data.can_state_full[0:self.size, 7],
-                   'purple', label="veh_torque")
+           self.twinx.plot(self.frame, self.planner_data.can_state_full[0:self.size, 7],
+                   'greenyellow', label="veh_torque")
 
         if self.checkVar_veh_pressure.get() == 1:  # brake pressure
-           self.ax.plot(self.frame, self.planner_data.can_state_full[0:self.size, 6],
+           self.twinx.plot(self.frame, self.planner_data.can_state_full[0:self.size, 6],
                    'k--', label="veh_brake_pressure")
 
         if self.checkVar_expt_vel_planner.get() == 1:  # vel
@@ -527,17 +529,19 @@ class Stg(tk.Tk):
                    'c--', label="veh_steer_ang_vel")
 
         if self.checkVar_expt_estop.get() == 1:  # estop
-           self.ax.plot(self.frame, self.planner_data.cmd[0:self.size, 5],
+           self.twinx.plot(self.frame, self.planner_data.cmd[0:self.size, 5],
                    'tab:green', label="expt_estop")
 
         if self.checkVar_veh_control_source.get() == 1:  # control
-           self.ax.plot(self.frame, self.planner_data.can_state_full[0:self.size, 5],
+           self.twinx.plot(self.frame, self.planner_data.can_state_full[0:self.size, 5],
                    'tab:gray', label="veh_control_source 0:Auto, 3:Manual")
 
         self.ax.legend(loc="best")
+        self.twinx.legend(loc="best")
         self.ax.grid(True)
         self.ax.set_xlabel("frame(100ms)")
-        self.ax.set_ylabel("vel(m/s) acc(m/s^2) shift steer(.)")
+        self.ax.set_ylabel("Vel(m/s) Acc(m/ss) Shift Steer(.)")
+        self.twinx.set_ylabel("Throttle Brake Torque Pressure Estop Control_source")
         self.ax.set_title("ucdf_plot")
         self.canvas.draw()
     def _quit(self):
