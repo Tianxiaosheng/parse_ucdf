@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #coding:utf-8
 
-# Version:         0.1.0
-# Update data:     2021-08-22
-# Updata contents: Adjust plot canvas's heigth and width according to window's size
+# Version:         0.2.0
+# Update data:     2021-10-08
+# Updata contents: could plot pressure acc torque info
 # Modified by:     Xiaosheng
 # https://github.com/Tianxiaosheng/parse_ucdf
 
@@ -96,29 +96,43 @@ class Planner_Data(object):
                 while line:
                     match = pattern.match(line)
                     if match:
-                        line_split = line.split(' : ')
-                        line_split = line_split[1].split(',')
-                        data_split = line_split[0].split('vel: ')
-                        data_split = data_split[1].split(')')
-                        vel = float(data_split[0])
-                        data_split = line_split[1].split('steer: ')
-                        data_split = data_split[1].split(')')
-                        steer = float(data_split[0])
-                        data_split = line_split[5].split('brake_enabled: ')
-                        data_split = data_split[1].split(')')
-                        brake = float(data_split[0])
+                        line_split = line.split('vel: ')
+                        line_split = line_split[1].split(')')
+                        vel = float(line_split[0])
 
-                        data_split = line_split[2].split('shift: ')
-                        data_split = data_split[1].split(')')
-                        shift = float(data_split[0])
+                        line_split = line.split('steer: ')
+                        line_split = line_split[1].split(')')
+                        steer = float(line_split[0])
 
-                        data_split = line_split[6].split('control_source: ')
-                        data_split = data_split[1].split(')')
-                        control_source = float(data_split[0])
+                        line_split = line.split('brake_enabled: ')
+                        line_split = line_split[1].split(')')
+                        brake = float(line_split[0])
 
+                        line_split = line.split('shift: ')
+                        line_split = line_split[1].split(')')
+                        shift = float(line_split[0])
+
+                        line_split = line.split('control_source: ')
+                        line_split = line_split[1].split(')')
+                        control_source = float(line_split[0])
+
+                        if line.count('pressure'):
+                            line_split = line.split('pressure: ')
+                            line_split = line_split[1].split(')')
+                            pressure = float(line_split[0])
+                        else:
+                            pressure = float(0.0)
+
+                        if line.count('torque') == 1:
+                            line_split = line.split('torque: ')
+                            line_split = line_split[1].split(')')
+                            torque = float(line_split[0])
+                        else:
+                            torque = float(0.0)
 
                         acc = 0.0
-                        self.can_state_full.append([vel, steer, acc, brake, shift, control_source])
+                        self.can_state_full.append(
+                                [vel, steer, acc, brake, shift, control_source, pressure, torque])
                     line = log.readline()
         self.can_state_full = np.array(self.can_state_full)
         WINDOW = 5
@@ -166,17 +180,21 @@ class Planner_Data(object):
                         data_split = line_split[2].split('steer: ')
                         data_split = data_split[1].split(')')
                         steer = float(data_split[0])
-                        data_split = line_split[5].split('brake: ')
-                        data_split = data_split[1].split(')')
-                        brake = float(data_split[0])
                         data_split = line_split[3].split('shift: ')
                         data_split = data_split[1].split(')')
                         shift = float(data_split[0])
+                        data_split = line_split[4].split('throttle: ')
+                        data_split = data_split[1].split(')')
+                        throttle = float(data_split[0])
+                        data_split = line_split[5].split('brake: ')
+                        data_split = data_split[1].split(')')
+                        brake = float(data_split[0])
                         data_split = line_split[8].split('estop: ')
                         data_split = data_split[1].split(')')
                         estop = float(data_split[0])
  
-                        self.cmd.append([vel, steer, acc, brake, shift, estop])
+                        self.cmd.append(
+                                [vel, steer, acc, brake, shift, estop, throttle])
                     line = log.readline()
         self.cmd = np.array(self.cmd)
 
@@ -278,6 +296,9 @@ class Stg(tk.Tk):
         self.checkVar_expt_acc_planner = IntVar()  # acc
         self.checkVar_expt_acc = IntVar()
         self.checkVar_veh_acc = IntVar()
+        self.checkVar_expt_throttle = IntVar()
+        self.checkVar_veh_torque = IntVar()
+        self.checkVar_veh_pressure = IntVar()
 
         self.checkVar_expt_vel_planner = IntVar()  # vel
         self.checkVar_expt_vel = IntVar()
@@ -316,10 +337,25 @@ class Stg(tk.Tk):
                 command=self.printf_info)
         checkbutton_veh_acc.grid(row=2, column=0, sticky=(W))
 
+        checkbutton_expt_throttle = tk.Checkbutton(labelAcc, text='Expt_Throttle',
+                variable = self.checkVar_expt_throttle, onvalue = 1, offvalue = 0,
+                command=self.printf_info)
+        checkbutton_expt_throttle.grid(row=3, column=0, sticky=(W))
+
         checkbutton_expt_brake = tk.Checkbutton(labelAcc, text='Expt_Brake',  # brake
                 variable = self.checkVar_expt_brake, onvalue = 1, offvalue = 0,
                 command=self.printf_info)
-        checkbutton_expt_brake.grid(row=3, column=0, sticky=(W))
+        checkbutton_expt_brake.grid(row=4, column=0, sticky=(W))
+
+        checkbutton_veh_torque = tk.Checkbutton(labelAcc, text='Veh_Torque',
+                variable = self.checkVar_veh_torque, onvalue = 1, offvalue = 0,
+                command=self.printf_info)
+        checkbutton_veh_torque.grid(row=5, column=0, sticky=(W))
+
+        checkbutton_veh_pressure = tk.Checkbutton(labelAcc, text='Veh_Pressure',
+                variable = self.checkVar_veh_pressure, onvalue = 1, offvalue = 0,
+                command=self.printf_info)
+        checkbutton_veh_pressure.grid(row=6, column=0, sticky=(W))
 
         checkbutton_expt_vel_planner = tk.Checkbutton(labelVel, text='Expt_Vel_Planner',  # vel
                 variable = self.checkVar_expt_vel_planner, onvalue = 1, offvalue = 0,
@@ -385,7 +421,10 @@ class Stg(tk.Tk):
         self.checkVar_expt_acc_planner.set(1)
         self.checkVar_expt_acc.set(1)
         self.checkVar_veh_acc.set(1)
-        self.checkVar_expt_brake.set(0)
+        self.checkVar_expt_throttle.set(1)
+        self.checkVar_expt_brake.set(1)
+        self.checkVar_veh_torque.set(1)
+        self.checkVar_veh_pressure.set(1)
 
         self.checkVar_expt_vel_planner.set(0)
         self.checkVar_expt_vel.set(0)
@@ -431,9 +470,21 @@ class Stg(tk.Tk):
            self.ax.plot(self.frame, self.planner_data.can_state_full[0:self.size, 2],
                    'g', label="veh_acc")
 
-        if self.checkVar_expt_brake.get() == 1:  # brake
+        if self.checkVar_expt_throttle.get() == 1:  # expt throttle
+           self.ax.plot(self.frame, self.planner_data.cmd[0:self.size, 3],
+                   'tab:red', label="expt_throttle")
+
+        if self.checkVar_expt_brake.get() == 1:  # expt brake
            self.ax.plot(self.frame, self.planner_data.cmd[0:self.size, 3],
                    'k', label="expt_brake")
+
+        if self.checkVar_veh_torque.get() == 1:  # brake pressure
+           self.ax.plot(self.frame, self.planner_data.can_state_full[0:self.size, 7],
+                   'purple', label="veh_torque")
+
+        if self.checkVar_veh_pressure.get() == 1:  # brake pressure
+           self.ax.plot(self.frame, self.planner_data.can_state_full[0:self.size, 6],
+                   'k--', label="veh_brake_pressure")
 
         if self.checkVar_expt_vel_planner.get() == 1:  # vel
             self.ax.plot(self.frame, self.planner_data.cmd_planner[0:self.size, 0], 'y',
@@ -486,7 +537,7 @@ class Stg(tk.Tk):
         self.ax.legend(loc="best")
         self.ax.grid(True)
         self.ax.set_xlabel("frame(100ms)")
-        self.ax.set_ylabel("vel(m/s) acc(m/s^2) angle(.)")
+        self.ax.set_ylabel("vel(m/s) acc(m/s^2) shift steer(.)")
         self.ax.set_title("ucdf_plot")
         self.canvas.draw()
     def _quit(self):
