@@ -442,7 +442,7 @@ class Stg(tk.Tk):
         self.checkVar_veh_steer_ang_vel.set(0)
 
         self.checkVar_expt_estop.set(0)
-        self.checkVar_veh_control_source.set(0)
+        self.checkVar_veh_control_source.set(1)
 
         self.printf_info();
 
